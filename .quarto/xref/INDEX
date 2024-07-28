@@ -1,0 +1,23 @@
+{
+  "index.qmd": {
+    "index.html": "593fc380"
+  },
+  "posts/post-with-code/index.qmd": {
+    "index.html": "e6e586ea"
+  },
+  "posts/welcome/index.qmd": {
+    "index.html": "63188343"
+  },
+  "about.qmd": {
+    "about.html": "b7d07018"
+  },
+  "posts/Understanding How EMA works?/index.qmd": {
+    "index.html": "8bd9f6fb"
+  },
+  "posts/Understanding_ema/index.qmd": {
+    "index.html": "aceaa9db"
+  },
+  "posts/Understanding_ema/understanding-how-ema-works.ipynb": {
+    "understanding-how-ema-works.html": "7676cbab"
+  }
+}

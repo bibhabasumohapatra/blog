@@ -1,0 +1,92 @@
+---
+title: Exponential Moving Average (EMA) in Weight Updates
+author: "Bibhabasu Mohapatra"
+date: "2023-05-28"
+categories: [pytorch, code]
+image: "image.jpg"
+---
+
+### EMA (Exponential Moving Average) is an incredibly useful concept that finds application in various scenarios:
+
+- #### Weight Updates: EMA is used for updating model weights while retaining a historical record of previous weights. This enables the model to blend new information with past knowledge effectively.
+
+- #### Self-Supervised Learning: EMA is commonly employed in Self-Supervised Learning setups. The weights obtained from Self-Supervised Learning are often utilized for downstream tasks like classification and segmentation.
+
+### Clarification on EMA's Impact
+
+##### Initially, there was a misconception that the EMA process directly impacts the ongoing training of model weights. However, this is not the case. In reality, the EMA process involves the creation of a duplicated set of weights. These duplicate weights are updated alongside the primary training process, and the updated weights are subsequently leveraged for validation purposes. As a result, the overall training procedure remains unaffected by the EMA process.
+
+<img src="ema.png"> 
+
+```{python}
+import torch.nn as nn
+import torch
+from copy import deepcopy
+
+class Model(nn.Module):
+    def __init__(self,):
+        super().__init__()
+
+        self.layer = nn.Linear(3,3,bias=False)
+
+    def forward(self,x):
+        return self.layer(x)
+    
+@torch.no_grad()
+def init_weights_1(m):
+    print(m)
+    if type(m) == nn.Linear:
+        m.weight.fill_(1.0)
+        print(m.weight)
+
+@torch.no_grad()
+def init_weights_2(m):
+    print(m)
+    if type(m) == nn.Linear:
+        m.weight.fill_(2.0)
+        print(m.weight)
+```
+
+```{python}
+#| execution: {iopub.execute_input: '2023-08-14T15:14:30.886828Z', iopub.status.busy: '2023-08-14T15:14:30.886198Z', iopub.status.idle: '2023-08-14T15:14:30.999982Z', shell.execute_reply: '2023-08-14T15:14:30.998761Z'}
+#| papermill: {duration: 0.121662, end_time: '2023-08-14T15:14:31.003024', exception: false, start_time: '2023-08-14T15:14:30.881362', status: completed}
+#| tags: []
+teacher = Model().apply(init_weights_1) ## TO BE UPDATED
+student = Model().apply(init_weights_2) ## From Training
+```
+
+```{python}
+#| execution: {iopub.execute_input: '2023-08-14T15:14:31.012591Z', iopub.status.busy: '2023-08-14T15:14:31.012166Z', iopub.status.idle: '2023-08-14T15:14:31.019071Z', shell.execute_reply: '2023-08-14T15:14:31.018176Z'}
+#| papermill: {duration: 0.014386, end_time: '2023-08-14T15:14:31.021255', exception: false, start_time: '2023-08-14T15:14:31.006869', status: completed}
+#| tags: []
+@torch.no_grad()
+def ema_model(teacher_model, student_model,decay=0.5):
+    teacher_model.eval()
+
+    for teacher_wt,student_wt in zip(teacher_model.state_dict().values(),student_model.state_dict().values()):
+        teacher_wt.copy_(teacher_wt*decay + student_wt*(1-decay))
+```
+
+```{python}
+#| execution: {iopub.execute_input: '2023-08-14T15:14:31.031324Z', iopub.status.busy: '2023-08-14T15:14:31.030527Z', iopub.status.idle: '2023-08-14T15:14:31.040022Z', shell.execute_reply: '2023-08-14T15:14:31.039186Z'}
+#| papermill: {duration: 0.017168, end_time: '2023-08-14T15:14:31.042463', exception: false, start_time: '2023-08-14T15:14:31.025295', status: completed}
+#| tags: []
+ema_model(teacher,student)
+```
+
+```{python}
+#| execution: {iopub.execute_input: '2023-08-14T15:14:31.052055Z', iopub.status.busy: '2023-08-14T15:14:31.051317Z', iopub.status.idle: '2023-08-14T15:14:31.060576Z', shell.execute_reply: '2023-08-14T15:14:31.059445Z'}
+#| papermill: {duration: 0.017, end_time: '2023-08-14T15:14:31.063255', exception: false, start_time: '2023-08-14T15:14:31.046255', status: completed}
+#| tags: []
+teacher.state_dict()
+```
+
+```{python}
+#| execution: {iopub.execute_input: '2023-08-14T15:14:31.073259Z', iopub.status.busy: '2023-08-14T15:14:31.072576Z', iopub.status.idle: '2023-08-14T15:14:31.080418Z', shell.execute_reply: '2023-08-14T15:14:31.079313Z'}
+#| papermill: {duration: 0.015332, end_time: '2023-08-14T15:14:31.082580', exception: false, start_time: '2023-08-14T15:14:31.067248', status: completed}
+#| tags: []
+student.state_dict()
+```
+
+
+
